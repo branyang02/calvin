@@ -1,0 +1,7 @@
+cmake==3.18.4
+setuptools==57.5.0
+
+# install calvin-sim/calvin_env/tacto locally
+# install calvin-sim/calven_env locally
+# install calvin-sim/calvin_models locally
+# install calvin-sim/urdfpy locally
