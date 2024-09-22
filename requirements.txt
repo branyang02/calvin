@@ -1,7 +1,10 @@
+# External dependencies
 cmake==3.18.4
 setuptools==57.5.0
+tyro==0.8.11
 
-# install calvin-sim/calvin_env/tacto locally
-# install calvin-sim/calven_env locally
-# install calvin-sim/calvin_models locally
-# install calvin-sim/urdfpy locally
+# Local editable installations
+-e ./calvin-sim/calvin_env/tacto
+-e ./calvin-sim/calvin_env
+-e ./calvin-sim/calvin_models
+-e ./calvin-sim/urdfpy
