@@ -9,8 +9,7 @@ import tyro
 
 # This is for using the locally installed repo clone when using slurm
 from calvin_agent.models.calvin_base_model import CalvinBaseModel
-
-sys.path.insert(0, Path(__file__).absolute().parents[2].as_posix())
+from eval_utils import update_yaml_files
 
 from calvin_agent.evaluation.multistep_sequences import get_sequences
 from calvin_agent.evaluation.utils import (
@@ -40,6 +39,12 @@ class Config:
     dataset_path: str = (
         "../calvin-datasets/mini_dataset"  # Path to the dataset root directory
     )
+    static_rgb_shape: tuple = (200, 200)  # height, width of the static RGB image
+    gripper_rgb_shape: tuple = (84, 84)  # height, width of the gripper RGB image
+    tactile_sensor_shape: tuple = (
+        160,
+        120,
+    )  # height, width of the tactile sensor image
     debug: bool = False  # Print debug info and visualize environment.
 
 
@@ -189,6 +194,7 @@ class CalvinEvaluator:
 def main():
     seed_everything(0, workers=True)  # type:ignore
     cfg = tyro.cli(Config)
+    update_yaml_files(cfg)  # updates rendering resolutions in yaml files
 
     model = CustomModel()
     env = make_env(cfg.dataset_path)
