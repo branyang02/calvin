@@ -25,5 +25,4 @@ Navigate to `eval-calvin` and run the following command to evaluate the performa
 python eval.py --dataset_path <path_to_dataset>
 ```
 
-Optionally, you can add the `--debug` flag to visualize the predictions.
-
+For all available options, run with the `-h` flag.
