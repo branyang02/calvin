@@ -3,6 +3,9 @@
 This is a wrapper repo of the original [calvin repo](https://github.com/mees/calvin) where everything just works.
 
 
+https://github.com/user-attachments/assets/7cb096f9-243c-4a6e-893d-a56eb3194260
+
+
 ## Installation
 
 1. Create conda environment
