@@ -150,16 +150,19 @@ class PlayTableSimEnv(gym.Env):
         else:
             print("does not own physics client id")
 
+    def render_image(self, mode) -> np.ndarray:
+        """Render image from camera, not compatable with gym compatibility function"""
+        rgb_obs, depth_obs = self.get_camera_obs()
+        if mode in rgb_obs:
+            return rgb_obs[mode]
+        elif mode in depth_obs:
+            return depth_obs[mode]
+        else:
+            raise NotImplementedError
+
     def render(self, mode="human"):
         """render is gym compatibility function"""
         rgb_obs, depth_obs = self.get_camera_obs()
-        if mode == "all":
-            return np.hstack(
-                (
-                    rgb_obs["rgb_static"],
-                    cv2.resize(rgb_obs["rgb_gripper"], rgb_obs["rgb_static"].shape[:2], interpolation=cv2.INTER_LINEAR),
-                )
-            )
         if mode == "human":
             if "rgb_static" in rgb_obs:
                 img = rgb_obs["rgb_static"][:, :, ::-1]

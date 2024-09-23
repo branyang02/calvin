@@ -1,15 +1,13 @@
 from dataclasses import dataclass
-import logging
 import os
 from pathlib import Path
-import sys
 import imageio
 from tqdm.auto import tqdm
 import tyro
 
 # This is for using the locally installed repo clone when using slurm
 from calvin_agent.models.calvin_base_model import CalvinBaseModel
-from eval_utils import update_yaml_files
+from eval_utils import gather_renders, update_yaml_files
 
 from calvin_agent.evaluation.multistep_sequences import get_sequences
 from calvin_agent.evaluation.utils import (
@@ -23,15 +21,9 @@ import hydra
 import numpy as np
 from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything
-from termcolor import colored
 
 from calvin_env.envs.play_table_env import get_env
 from calvin_env.envs.play_table_env import PlayTableSimEnv
-
-logger = logging.getLogger(__name__)
-
-EP_LEN = 360
-NUM_SEQUENCES = 10
 
 
 @dataclass
@@ -39,6 +31,8 @@ class Config:
     dataset_path: str = (
         "../calvin-datasets/mini_dataset"  # Path to the dataset root directory
     )
+    ep_length: int = 360  # Number of steps in an episode
+    num_sequences: int = 10  # Number of sequences to evaluate
     static_rgb_shape: tuple = (200, 200)  # height, width of the static RGB image
     gripper_rgb_shape: tuple = (84, 84)  # height, width of the gripper RGB image
     tactile_sensor_shape: tuple = (
@@ -46,6 +40,12 @@ class Config:
         120,
     )  # height, width of the tactile sensor image
     debug: bool = False  # Print debug info and visualize environment.
+    vis_rgb_static: bool = True  # visualize static rgb image in debug mode
+    vis_rgb_gripper: bool = True  # visualize gripper rgb image in debug mode
+    vis_rgb_tactile: bool = False  # visualize tactile sensor image in debug mode
+    vis_depth_static: bool = True  # visualize static depth image in debug mode
+    vis_depth_gripper: bool = True  # visualize gripper depth image in debug mode
+    vis_depth_tactile: bool = False  # visualize tactile depth image in debug mode
 
 
 def make_env(dataset_path):
@@ -56,12 +56,16 @@ def make_env(dataset_path):
 
 class CustomModel(CalvinBaseModel):
     def __init__(self):
+        # TODO: Add any model specific initialization here
         pass
 
     def reset(self):
+        # TODO: Add any model specific reset here
         pass
 
     def step(self, obs, goal):
+        # TODO: Add your model's logic here
+
         # Random action
         action_displacement = np.random.uniform(low=-1, high=1, size=6)
         action_gripper = np.random.choice([-1, 1], size=1)
@@ -92,7 +96,7 @@ class CalvinEvaluator:
         )
 
         eval_log_dir = get_log_dir(f"{self.dataset_name}_eval_results")
-        eval_sequences = get_sequences(NUM_SEQUENCES)
+        eval_sequences = get_sequences(self.cfg.num_sequences)
 
         results = []
 
@@ -156,12 +160,12 @@ class CalvinEvaluator:
         self.model.reset()
         start_info = self.env.get_info()
 
-        for step in range(EP_LEN):
+        for step in range(self.cfg.ep_length):
             action = self.model.step(obs, lang_annotation)
             obs, _, _, current_info = self.env.step(action)
             if self.cfg.debug:
-                img = self.env.render(mode="all")
-                canvas_all.append(img)
+                images = gather_renders(self.cfg, self.env)
+                canvas_all.append(images)
 
             # check if current step solves a task
             current_task_info = task_oracle.get_task_info_for_set(
